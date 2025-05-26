@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - vsearch =2.30.0
+  - pigz
+  - pbzip2

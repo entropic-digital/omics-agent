@@ -1,3 +1,4 @@
+import asyncio
 import inspect
 import logging
 import re
@@ -75,7 +76,50 @@ def get_tools(
     for tool_id in tool_ids:
         tool = Tools.get_tool_by_id(tool_id)
         if tool is None:
-            if tool_id.startswith("server:"):
+            if tool_id.startswith("bioinformatics:"):
+                # Handle bioinformatics tools from tools_manager
+                tool_name = tool_id.replace("bioinformatics:", "")
+                from open_webui.utils.tools_manager import tools_manager
+                
+                tool_function = tools_manager.get_tool(tool_name)
+                if tool_function:
+                    # Create a spec for the bioinformatics tool
+                    spec = {
+                        "name": tool_name,
+                        "description": f"Bioinformatics tool: {tool_name}",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        }
+                    }
+                    
+                    def make_bio_tool_function(func, name):
+                        async def bio_tool_function(**kwargs):
+                            try:
+                                if hasattr(func, '__call__'):
+                                    if asyncio.iscoroutinefunction(func):
+                                        return await func(**kwargs)
+                                    else:
+                                        return func(**kwargs)
+                                else:
+                                    return await tools_manager.execute_tool(name, **kwargs)
+                            except Exception as e:
+                                log.error(f"Error executing bioinformatics tool {name}: {str(e)}")
+                                raise
+                        return bio_tool_function
+                    
+                    callable_func = make_bio_tool_function(tool_function, tool_name)
+                    
+                    tool_dict = {
+                        "tool_id": tool_id,
+                        "callable": callable_func,
+                        "spec": spec,
+                    }
+                    
+                    tools_dict[tool_name] = tool_dict
+                continue
+            elif tool_id.startswith("server:"):
                 server_idx = int(tool_id.split(":")[1])
                 tool_server_connection = (
                     request.app.state.config.TOOL_SERVER_CONNECTIONS[server_idx]

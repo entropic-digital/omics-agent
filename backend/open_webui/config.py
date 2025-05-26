@@ -986,7 +986,7 @@ MODEL_ORDER_LIST = PersistentConfig(
 DEFAULT_USER_ROLE = PersistentConfig(
     "DEFAULT_USER_ROLE",
     "ui.default_user_role",
-    os.getenv("DEFAULT_USER_ROLE", "pending"),
+    os.getenv("DEFAULT_USER_ROLE", "user"),  # Set default role to "user" instead of "pending"
 )
 
 PENDING_USER_OVERLAY_TITLE = PersistentConfig(
@@ -1133,37 +1133,37 @@ USER_PERMISSIONS_FEATURES_NOTES = (
 
 DEFAULT_USER_PERMISSIONS = {
     "workspace": {
-        "models": USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS,
-        "knowledge": USER_PERMISSIONS_WORKSPACE_KNOWLEDGE_ACCESS,
-        "prompts": USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS,
-        "tools": USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS,
+        "models": True,  # Allow models access
+        "knowledge": False,
+        "prompts": False,
+        "tools": True,  # Allow tools access
     },
     "sharing": {
-        "public_models": USER_PERMISSIONS_WORKSPACE_MODELS_ALLOW_PUBLIC_SHARING,
-        "public_knowledge": USER_PERMISSIONS_WORKSPACE_KNOWLEDGE_ALLOW_PUBLIC_SHARING,
-        "public_prompts": USER_PERMISSIONS_WORKSPACE_PROMPTS_ALLOW_PUBLIC_SHARING,
-        "public_tools": USER_PERMISSIONS_WORKSPACE_TOOLS_ALLOW_PUBLIC_SHARING,
+        "public_models": False,
+        "public_knowledge": False,
+        "public_prompts": False,
+        "public_tools": False,
     },
     "chat": {
-        "controls": USER_PERMISSIONS_CHAT_CONTROLS,
-        "file_upload": USER_PERMISSIONS_CHAT_FILE_UPLOAD,
-        "delete": USER_PERMISSIONS_CHAT_DELETE,
-        "edit": USER_PERMISSIONS_CHAT_EDIT,
-        "share": USER_PERMISSIONS_CHAT_SHARE,
-        "export": USER_PERMISSIONS_CHAT_EXPORT,
-        "stt": USER_PERMISSIONS_CHAT_STT,
-        "tts": USER_PERMISSIONS_CHAT_TTS,
-        "call": USER_PERMISSIONS_CHAT_CALL,
-        "multiple_models": USER_PERMISSIONS_CHAT_MULTIPLE_MODELS,
-        "temporary": USER_PERMISSIONS_CHAT_TEMPORARY,
-        "temporary_enforced": USER_PERMISSIONS_CHAT_TEMPORARY_ENFORCED,
+        "controls": True,  # Allow chat controls
+        "file_upload": True,
+        "delete": True,
+        "edit": True,
+        "share": False,  # Disable sharing
+        "export": False,  # Disable export
+        "stt": True,
+        "tts": True,
+        "call": True,
+        "multiple_models": True,  # Allow using multiple models
+        "temporary": True,
+        "temporary_enforced": False,
     },
     "features": {
-        "direct_tool_servers": USER_PERMISSIONS_FEATURES_DIRECT_TOOL_SERVERS,
-        "web_search": USER_PERMISSIONS_FEATURES_WEB_SEARCH,
-        "image_generation": USER_PERMISSIONS_FEATURES_IMAGE_GENERATION,
-        "code_interpreter": USER_PERMISSIONS_FEATURES_CODE_INTERPRETER,
-        "notes": USER_PERMISSIONS_FEATURES_NOTES,
+        "direct_tool_servers": False,
+        "web_search": False,  # Disable web search
+        "image_generation": False,  # Disable image generation
+        "code_interpreter": False,  # Disable code interpreter
+        "notes": False,  # Disable notes
     },
 }
 

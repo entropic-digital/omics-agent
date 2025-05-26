@@ -473,6 +473,15 @@ async def lifespan(app: FastAPI):
     log.info("Installing external dependencies of functions and tools...")
     install_tool_and_function_dependencies()
 
+    # Load bioinformatics tools
+    log.info("Loading all bioinformatics tools...")
+    try:
+        from open_webui.utils.tool_loader import load_all_tools
+        loaded_tools = load_all_tools()
+        log.info(f"Successfully loaded {len(loaded_tools)} bioinformatics tools")
+    except Exception as e:
+        log.error(f"Failed to load bioinformatics tools: {e}")
+
     if THREAD_POOL_SIZE and THREAD_POOL_SIZE > 0:
         limiter = anyio.to_thread.current_default_thread_limiter()
         limiter.total_tokens = THREAD_POOL_SIZE

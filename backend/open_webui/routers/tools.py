@@ -45,6 +45,26 @@ async def get_tools(request: Request, user=Depends(get_verified_user)):
         )
 
     tools = Tools.get_tools()
+    
+    # Add tools from tools_manager (bioinformatics tools)
+    from open_webui.utils.tools_manager import tools_manager
+    for tool_name in tools_manager.list_tools():
+        tools.append(
+            ToolUserResponse(
+                **{
+                    "id": f"bioinformatics:{tool_name}",
+                    "user_id": "system",
+                    "name": tool_name.replace('_', ' ').title(),
+                    "meta": {
+                        "description": f"Bioinformatics tool: {tool_name}",
+                    },
+                    "access_control": None,
+                    "updated_at": int(time.time()),
+                    "created_at": int(time.time()),
+                }
+            )
+        )
+    
     for server in request.app.state.TOOL_SERVERS:
         tools.append(
             ToolUserResponse(
@@ -76,6 +96,7 @@ async def get_tools(request: Request, user=Depends(get_verified_user)):
             for tool in tools
             if tool.user_id == user.id
             or has_access(user.id, "read", tool.access_control)
+            or tool.user_id == "system"  # Allow system tools for all users
         ]
 
     return tools
@@ -92,6 +113,26 @@ async def get_tool_list(user=Depends(get_verified_user)):
         tools = Tools.get_tools()
     else:
         tools = Tools.get_tools_by_user_id(user.id, "write")
+    
+    # Add tools from tools_manager (bioinformatics tools)
+    from open_webui.utils.tools_manager import tools_manager
+    for tool_name in tools_manager.list_tools():
+        tools.append(
+            ToolUserResponse(
+                **{
+                    "id": f"bioinformatics:{tool_name}",
+                    "user_id": "system",
+                    "name": tool_name.replace('_', ' ').title(),
+                    "meta": {
+                        "description": f"Bioinformatics tool: {tool_name}",
+                    },
+                    "access_control": None,
+                    "updated_at": int(time.time()),
+                    "created_at": int(time.time()),
+                }
+            )
+        )
+    
     return tools
 
 

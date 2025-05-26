@@ -34,7 +34,7 @@ RUN npm ci
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 ######## WebUI backend ########
 FROM python:3.11-slim-bookworm AS base
@@ -152,8 +152,6 @@ RUN pip3 install --no-cache-dir uv && \
     fi; \
     chown -R $UID:$GID /app/backend/data/
 
-
-
 # copy embedding weight from build
 # RUN mkdir -p /root/.cache/chroma/onnx_models/all-MiniLM-L6-v2
 # COPY --from=build /app/onnx /root/.cache/chroma/onnx_models/all-MiniLM-L6-v2/onnx
@@ -165,6 +163,8 @@ COPY --chown=$UID:$GID --from=build /app/package.json /app/package.json
 
 # copy backend files
 COPY --chown=$UID:$GID ./backend .
+COPY --chown=$UID:$GID ./tools /app/tools
+COPY --chown=$UID:$GID ./core /app/core
 
 EXPOSE 8080
 
@@ -175,5 +175,6 @@ USER $UID:$GID
 ARG BUILD_HASH
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
 ENV DOCKER=true
+ENV PYTHONPATH="/app:${PYTHONPATH}"
 
 CMD [ "bash", "start.sh"]

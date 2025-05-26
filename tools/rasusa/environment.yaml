@@ -1,0 +1,6 @@
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - rasusa =2.1.0
