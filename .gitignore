@@ -307,3 +307,10 @@ dist
 cypress/videos
 cypress/screenshots
 .vscode/settings.json
+
+# Snakemake
+.snakemake/
+.snakemake
+**/.snakemake/
+.snakemake/**/*
+*.snakemake

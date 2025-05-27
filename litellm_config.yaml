@@ -1,0 +1,17 @@
+model_list:
+  - model_name: claude-3-5-sonnet
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20241022
+  - model_name: claude-3-5-haiku
+    litellm_params:
+      model: anthropic/claude-3-5-haiku-20241022
+  - model_name: claude-3-opus
+    litellm_params:
+      model: anthropic/claude-3-opus-20240229
+  - model_name: gpt-4.1-mini
+    litellm_params:
+      model: azure/gpt-4.1-mini
+      api_key: BouvDdCAC26tHLMukk7Dks9Ig7SSFMMqD7AoOA877MHRmGTVdsqBJQQJ99BEACHYHv6XJ3w3AAAAACOGr5o6
+      api_base: https://dioni-maph9vw0-eastus2.cognitiveservices.azure.com
+      api_version: 2025-01-01-preview
+      deployment_id: gpt-4.1-mini 

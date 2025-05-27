@@ -68,7 +68,7 @@ fi
 PYTHON_CMD=$(command -v python3 || command -v python)
 
 echo "Starting internal MCP server..."
-python /app/mcp_server.py > /app/backend/logs/mcp.log 2>&1 &
+python /app/bioinformatics_mcp/mcp_server.py > /app/backend/logs/mcp.log 2>&1 &
 sleep 2
 
 WEBUI_SECRET_KEY="$WEBUI_SECRET_KEY" exec "$PYTHON_CMD" -m uvicorn open_webui.main:app --host "$HOST" --port "$PORT" --forwarded-allow-ips '*' --workers "${UVICORN_WORKERS:-1}"

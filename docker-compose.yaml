@@ -8,6 +8,21 @@ services:
     restart: unless-stopped
     image: ollama/ollama:${OLLAMA_DOCKER_TAG-latest}
 
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: litellm
+    restart: unless-stopped
+    command:
+      - '--config=/litellm_config.yaml'
+      - '--detailed_debug'
+    ports:
+      - '127.0.0.1:4000:4000'
+    environment:
+      - LITELLM_MASTER_KEY=dummy
+      - ANTHROPIC_API_KEY=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
+    volumes:
+      - ./litellm_config.yaml:/litellm_config.yaml
+
   open-webui:
     build:
       context: .
@@ -19,14 +34,20 @@ services:
     volumes:
       - open-webui:/app/backend/data
       - ./backend/logs:/app/backend/logs
+      - ./bioinformatics_mcp:/app/bioinformatics_mcp
     depends_on:
       - ollama
+      - litellm
     ports:
       - "3000:8080"
     environment:
       - 'OLLAMA_BASE_URL=http://ollama:11434'
       - 'WEBUI_SECRET_KEY='
       - 'WEBUI_URL=http://localhost:3000'
+      - 'ENABLE_OPENAI_API=true'
+      - 'OPENAI_API_BASE_URLS=http://litellm:4000/v1'
+      - 'OPENAI_API_KEYS=dummy'
+      - 'DEFAULT_MODELS=claude-3-5-sonnet'
     extra_hosts:
       - host.docker.internal:host-gateway
     restart: unless-stopped

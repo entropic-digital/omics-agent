@@ -9,24 +9,25 @@ log = logging.getLogger(__name__)
 
 def load_all_tools() -> List[Dict[str, Any]]:
     """
-    Automatically load all tools from the tools directory.
+    Automatically load all tools from the bioinformatics-mcp directory.
     Returns a list of tool dictionaries containing name, function, and
     metadata.
     """
     tools_dir = (
-        Path(__file__).parent.parent.parent.parent / 'tools'
+        Path(__file__).parent.parent.parent.parent / 
+        'bioinformatics_mcp'
     )
     loaded_tools = []
     
     try:
         # First, import the tool_decorator to initialize the registration system
-        importlib.import_module('tools.tool_decorator')
+        importlib.import_module('bioinformatics_mcp.tool_decorator')
         
-        # Walk through all directories in the tools folder
+        # Walk through all directories in the bioinformatics-mcp folder
         for item in os.listdir(tools_dir):
             if item in {
                 '__pycache__', '.git', '.pytest_cache',
-                '__init__.py', 'tool_decorator.py'
+                '__init__.py', 'tool_decorator.py', 'core'
             } or item.startswith('.'):
                 continue
                 
@@ -34,7 +35,7 @@ def load_all_tools() -> List[Dict[str, Any]]:
                 # Try to import the tool module
                 try:
                     # Import the tool module
-                    module_path = f"tools.{item}"
+                    module_path = f"bioinformatics_mcp.{item}"
                     importlib.import_module(module_path)
                     
                     # Look for MCP run modules in this tool directory
@@ -44,18 +45,20 @@ def load_all_tools() -> List[Dict[str, Any]]:
                             try:
                                 # Import the run module
                                 module_name = (
-                                    f"tools.{item}.mcp.{run_file.stem}"
+                                    f"bioinformatics_mcp.{item}.mcp."
+                                    f"{run_file.stem}"
                                 )
                                 importlib.import_module(module_name)
                             except Exception as e:
                                 log.error(
-                                    f"Failed to load run module {run_file}: {str(e)}"
+                                    f"Failed to load run module "
+                                    f"{run_file}: {str(e)}"
                                 )
                 except Exception as e:
                     log.error(f"Failed to load tool module {item}: {str(e)}")
         
         # After loading all modules, collect the registered tools
-        from tools.tool_decorator import tool_functions
+        from bioinformatics_mcp.tool_decorator import tool_functions
         loaded_tools = tool_functions
         
         # Initialize the tools in the manager
