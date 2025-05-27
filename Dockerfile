@@ -108,6 +108,7 @@ RUN echo -n 00000000-0000-0000-0000-000000000000 > $HOME/.cache/chroma/telemetry
 # Make sure the user has access to the app and root directory
 RUN chown -R $UID:$GID /app $HOME
 
+# Install system dependencies
 RUN if [ "$USE_OLLAMA" = "true" ]; then \
     apt-get update && \
     # Install pandoc and netcat
@@ -117,6 +118,8 @@ RUN if [ "$USE_OLLAMA" = "true" ]; then \
     apt-get install -y --no-install-recommends ffmpeg libsm6 libxext6 && \
     # install helper tools
     apt-get install -y --no-install-recommends curl jq && \
+    # install additional tools for bioinformatics
+    apt-get install -y --no-install-recommends wget bzip2 ca-certificates && \
     # install ollama
     curl -fsSL https://ollama.com/install.sh | sh && \
     # cleanup
@@ -128,14 +131,41 @@ RUN if [ "$USE_OLLAMA" = "true" ]; then \
     apt-get install -y --no-install-recommends gcc python3-dev && \
     # for RAG OCR
     apt-get install -y --no-install-recommends ffmpeg libsm6 libxext6 && \
+    # install additional tools for bioinformatics
+    apt-get install -y --no-install-recommends wget bzip2 ca-certificates && \
     # cleanup
     rm -rf /var/lib/apt/lists/*; \
     fi
+
+# Install miniforge (includes mamba)
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
+        MINIFORGE_ARCH="aarch64"; \
+    else \
+        MINIFORGE_ARCH="x86_64"; \
+    fi && \
+    wget -q https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-${MINIFORGE_ARCH}.sh -O /tmp/miniforge.sh && \
+    bash /tmp/miniforge.sh -b -p /opt/conda && \
+    rm /tmp/miniforge.sh && \
+    /opt/conda/bin/conda clean -afy
+
+# Add conda to PATH
+ENV PATH="/opt/conda/bin:$PATH"
+
+# Copy environment.yml and create bioinformatics-mcp environment
+COPY --chown=$UID:$GID environment.yml /app/environment.yml
+RUN mamba env create -f /app/environment.yml && \
+    mamba clean -afy
+
+# Activate the bioinformatics-mcp environment by default
+ENV CONDA_DEFAULT_ENV=bioinformatics-mcp
+ENV PATH="/opt/conda/envs/bioinformatics-mcp/bin:$PATH"
 
 # install python dependencies
 COPY --chown=$UID:$GID ./backend/requirements.txt ./requirements.txt
 
 RUN pip3 install --no-cache-dir uv && \
+    pip3 install --no-cache-dir snakemake && \
     if [ "$USE_CUDA" = "true" ]; then \
     # If you use CUDA the whisper and embedding model will be downloaded on first use
     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/$USE_CUDA_DOCKER_VER --no-cache-dir && \
@@ -163,8 +193,10 @@ COPY --chown=$UID:$GID --from=build /app/package.json /app/package.json
 
 # copy backend files
 COPY --chown=$UID:$GID ./backend .
-COPY --chown=$UID:$GID ./tools /app/tools
-COPY --chown=$UID:$GID ./core /app/core
+COPY --chown=$UID:$GID ./bioinformatics_mcp /app/bioinformatics_mcp
+
+
+WORKDIR /app/backend
 
 EXPOSE 8080
 
@@ -175,6 +207,6 @@ USER $UID:$GID
 ARG BUILD_HASH
 ENV WEBUI_BUILD_VERSION=${BUILD_HASH}
 ENV DOCKER=true
-ENV PYTHONPATH="/app:${PYTHONPATH}"
+ENV PYTHONPATH="/app:/app/bioinformatics_mcp:${PYTHONPATH}"
 
 CMD [ "bash", "start.sh"]

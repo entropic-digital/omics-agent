@@ -2,37 +2,29 @@ import asyncio
 import inspect
 import logging
 import re
-import inspect
 import aiohttp
-import asyncio
 import yaml
+import os
 
 from pydantic import BaseModel
-from pydantic.fields import FieldInfo
 from typing import (
     Any,
     Awaitable,
     Callable,
     get_type_hints,
-    get_args,
-    get_origin,
     Dict,
     List,
-    Tuple,
-    Union,
     Optional,
-    Type,
 )
 from functools import update_wrapper, partial
 
 
 from fastapi import Request
-from pydantic import BaseModel, Field, create_model
+from pydantic import Field, create_model
 
 from langchain_core.utils.function_calling import (
     convert_to_openai_function as convert_pydantic_model_to_openai_function_spec,
 )
-
 
 from open_webui.models.tools import Tools
 from open_webui.models.users import UserModel
@@ -83,33 +75,93 @@ def get_tools(
                 
                 tool_function = tools_manager.get_tool(tool_name)
                 if tool_function:
-                    # Create a spec for the bioinformatics tool
-                    spec = {
-                        "name": tool_name,
-                        "description": f"Bioinformatics tool: {tool_name}",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {},
-                            "required": []
+                    # Get the proper spec from the function signature
+                    try:
+                        pydantic_model = convert_function_to_pydantic_model(
+                            tool_function
+                        )
+                        spec = convert_pydantic_model_to_openai_function_spec(
+                            pydantic_model
+                        )
+                        # Override the name to match the tool_name
+                        spec["name"] = tool_name
+                    except Exception as e:
+                        log.error(
+                            f"Error creating spec for bioinformatics tool "
+                            f"{tool_name}: {str(e)}"
+                        )
+                        # Fallback to basic spec
+                        spec = {
+                            "name": tool_name,
+                            "description": f"Bioinformatics tool: {tool_name}",
+                            "parameters": {
+                                "type": "object",
+                                "properties": {},
+                                "required": []
+                            }
                         }
-                    }
                     
                     def make_bio_tool_function(func, name):
                         async def bio_tool_function(**kwargs):
                             try:
-                                if hasattr(func, '__call__'):
-                                    if asyncio.iscoroutinefunction(func):
-                                        return await func(**kwargs)
+                                log.info(
+                                    f"Executing bioinformatics tool {name} "
+                                    f"with params: {kwargs}"
+                                )
+                                
+                                # Change to the project root directory where 
+                                # bioinformatics_mcp is located
+                                current_dir = os.getcwd()
+                                project_root = os.path.dirname(
+                                    os.path.dirname(
+                                        os.path.dirname(
+                                            os.path.dirname(__file__)
+                                        )
+                                    )
+                                )
+                                os.chdir(project_root)
+                                
+                                try:
+                                    # Ensure we're calling with keyword arguments
+                                    if hasattr(func, '__call__'):
+                                        if asyncio.iscoroutinefunction(func):
+                                            result = await func(**kwargs)
+                                        else:
+                                            result = func(**kwargs)
+                                        log.info(f"Tool {name} executed successfully")
+                                        
+                                        # Return subprocess result info for AI agent
+                                        if hasattr(result, 'returncode'):
+                                            result_info = {
+                                                "tool": name,
+                                                "returncode": result.returncode,
+                                                "success": result.returncode == 0,
+                                                "stdout": result.stdout,
+                                                "stderr": result.stderr,
+                                                "command_args": getattr(result, 'args', [])
+                                            }
+                                            return result_info
+                                        
+                                        return result
                                     else:
-                                        return func(**kwargs)
-                                else:
-                                    return await tools_manager.execute_tool(name, **kwargs)
+                                        return await tools_manager.execute_tool(
+                                            name, **kwargs
+                                        )
+                                finally:
+                                    # Always restore the original directory
+                                    os.chdir(current_dir)
                             except Exception as e:
-                                log.error(f"Error executing bioinformatics tool {name}: {str(e)}")
+                                log.error(
+                                    f"Error executing bioinformatics tool "
+                                    f"{name}: {str(e)}"
+                                )
+                                log.error(f"Parameters passed: {kwargs}")
                                 raise
                         return bio_tool_function
                     
-                    callable_func = make_bio_tool_function(tool_function, tool_name)
+                    callable_func = make_bio_tool_function(
+                        tool_function, tool_name
+                    )
                     
                     tool_dict = {
                         "tool_id": tool_id,
