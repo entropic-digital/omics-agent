@@ -453,19 +453,20 @@ async def signin(request: Request, response: Response, form_data: SigninForm):
 @router.post("/signup", response_model=SessionUserResponse)
 async def signup(request: Request, response: Response, form_data: SignupForm):
 
-    if WEBUI_AUTH:
-        if (
-            not request.app.state.config.ENABLE_SIGNUP
-            or not request.app.state.config.ENABLE_LOGIN_FORM
-        ):
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN, detail=ERROR_MESSAGES.ACCESS_PROHIBITED
-            )
-    else:
-        if Users.get_num_users() != 0:
-            raise HTTPException(
-                status.HTTP_403_FORBIDDEN, detail=ERROR_MESSAGES.ACCESS_PROHIBITED
-            )
+    # This was preventing auth
+    # if WEBUI_AUTH:
+    #     if (
+    #         not request.app.state.config.ENABLE_SIGNUP
+    #         or not request.app.state.config.ENABLE_LOGIN_FORM
+    #     ):
+    #         raise HTTPException(
+    #             status.HTTP_403_FORBIDDEN, detail=ERROR_MESSAGES.ACCESS_PROHIBITED
+    #         )
+    # else:
+    #     if Users.get_num_users() != 0:
+    #         raise HTTPException(
+    #             status.HTTP_403_FORBIDDEN, detail=ERROR_MESSAGES.ACCESS_PROHIBITED
+    #         )
 
     user_count = Users.get_num_users()
     if not validate_email_format(form_data.email.lower()):
@@ -539,10 +540,6 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
             user_permissions = get_permissions(
                 user.id, request.app.state.config.USER_PERMISSIONS
             )
-
-            if user_count == 0:
-                # Disable signup after the first user is created
-                request.app.state.config.ENABLE_SIGNUP = False
 
             return {
                 "token": token,

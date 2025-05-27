@@ -472,6 +472,8 @@
 		}
 	};
 
+	let mode = $config?.features.enable_ldap ? 'ldap' : 'signin';
+
 	onMount(async () => {
 		if (typeof window !== 'undefined' && window.applyTheme) {
 			window.applyTheme();
@@ -601,9 +603,9 @@
 						await goto(`/auth?redirect=${encodedUrl}`);
 					}
 				} else {
-					// Don't redirect if we're already on the auth page
+					// Don't redirect if we're already on the auth page or register page
 					// Needed because we pass in tokens from OAuth logins via URL fragments
-					if ($page.url.pathname !== '/auth') {
+					if ($page.url.pathname !== '/auth' && $page.url.pathname !== '/register') {
 						await goto(`/auth?redirect=${encodedUrl}`);
 					}
 				}
@@ -643,6 +645,27 @@
 		} else {
 			document.getElementById('splash-screen')?.remove();
 			loaded = true;
+		}
+
+		// Check for mode parameter in URL
+		const modeParam = querystringValue('mode');
+		if (modeParam === 'signup') {
+			mode = 'signup';
+		}
+
+		if ($user !== undefined) {
+			const redirectPath = querystringValue('redirect') || '/';
+			goto(redirectPath);
+		}
+		await checkOauthCallback();
+
+		loaded = true;
+		setLogoImage();
+
+		if (($config?.features.auth_trusted_header ?? false) || $config?.features.auth === false) {
+			await signInHandler();
+		} else {
+			onboarding = $config?.onboarding ?? false;
 		}
 
 		return () => {
