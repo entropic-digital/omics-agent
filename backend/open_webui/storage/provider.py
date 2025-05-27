@@ -341,6 +341,42 @@ class AzureStorageProvider(StorageProvider):
         # Always delete from local storage
         LocalStorageProvider.delete_all_files()
 
+    def list_files(self, prefix: str = "") -> dict:
+        """Lists all files in the container in a directory tree structure.
+        
+        Args:
+            prefix (str): Optional prefix to filter blobs (like a directory path)
+            
+        Returns:
+            dict: A nested dictionary representing the directory structure
+        """
+        try:
+            tree = {}
+            # List all blobs with the given prefix
+            blobs = self.container_client.list_blobs(name_starts_with=prefix)
+            
+            for blob in blobs:
+                # Split the blob name into path components
+                path_parts = blob.name.split('/')
+                current = tree
+                
+                # Build the tree structure
+                for i, part in enumerate(path_parts):
+                    if i == len(path_parts) - 1:  # If it's a file
+                        current[part] = {
+                            "type": "file",
+                            "size": blob.size,
+                            "last_modified": blob.last_modified.isoformat(),
+                        }
+                    else:  # If it's a directory
+                        if part not in current:
+                            current[part] = {"type": "directory", "contents": {}}
+                        current = current[part]["contents"]
+            
+            return tree
+        except Exception as e:
+            raise RuntimeError(f"Error listing files from Azure Blob Storage: {e}")
+
 
 def get_storage_provider(storage_provider: str):
     if storage_provider == "local":

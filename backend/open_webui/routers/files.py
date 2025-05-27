@@ -256,6 +256,28 @@ async def search_files(
 
 
 ############################
+# List Files from Storage
+############################
+
+
+@router.get("/storage/list")
+async def list_storage_files(user=Depends(get_verified_user)):
+    """List all files from the storage provider in a directory tree structure."""
+    try:
+        if isinstance(Storage, AzureStorageProvider):
+            return Storage.list_files()
+        else:
+            # For other storage providers, return an empty structure for now
+            return {}
+    except Exception as e:
+        log.exception(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )
+
+
+############################
 # Delete All Files
 ############################
 
@@ -543,7 +565,7 @@ async def get_file_content_by_id(id: str, user=Depends(get_verified_user)):
                     detail=ERROR_MESSAGES.NOT_FOUND,
                 )
         else:
-            # File path doesn’t exist, return the content as .txt if possible
+            # File path doesn't exist, return the content as .txt if possible
             file_content = file.content.get("content", "")
             file_name = file.filename
 
