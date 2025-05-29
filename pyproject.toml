@@ -1,8 +1,10 @@
 [project]
-name = "open-webui"
-description = "Open WebUI"
+name = "omics-agent"
+description = "Omics Agent"
 authors = [
-    { name = "Timothy Jaeryang Baek", email = "tim@openwebui.com" }
+    { name = "Dionizije Fa", email = "dionizije.fa@entropic.digital" }
+    { name = "Bruno Pandža", email = "bruno.pandza@entropic.digital" }
+    { name = "Mateo Čupić", email = "mateo.cupic@entropic.digital" }
 ]
 license = { file = "LICENSE" }
 dependencies = [
