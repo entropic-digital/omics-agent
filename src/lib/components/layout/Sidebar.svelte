@@ -587,7 +587,7 @@
 			</div>
 		{/if}
 
-		{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
+		<!-- {#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
 			<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
 				<a
 					class="grow flex items-center space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition"
@@ -624,9 +624,9 @@
 					</div>
 				</a>
 			</div>
-		{/if}
+		{/if} -->
 
-		<div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
+		<!-- <div class="px-1.5 flex justify-center text-gray-800 dark:text-gray-200">
 			<button
 				class="grow flex items-center space-x-3 rounded-lg px-2 py-[7px] hover:bg-gray-100 dark:hover:bg-gray-900 transition outline-none"
 				on:click={() => {
@@ -642,7 +642,7 @@
 					<div class=" self-center font-medium text-sm font-primary">{$i18n.t('Search')}</div>
 				</div>
 			</button>
-		</div>
+		</div> -->
 
 		<div
 			class="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden {$temporaryChatEnabled
