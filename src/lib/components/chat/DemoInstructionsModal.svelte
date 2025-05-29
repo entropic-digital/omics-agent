@@ -60,6 +60,7 @@
 						download-directory.github.io
 					</a>
 				</li>
+				<li>Upload the data using the "+" button</li>
 				<li>
 					Use the following prompt:<br />
 					<span class="text-gray-700 font-bold dark:text-gray-300 pl-4 block mt-1">

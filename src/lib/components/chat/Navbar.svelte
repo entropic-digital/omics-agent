@@ -26,6 +26,7 @@
 	import UserMenu from '$lib/components/layout/Sidebar/UserMenu.svelte';
 	import MenuLines from '../icons/MenuLines.svelte';
 	import AdjustmentsHorizontal from '../icons/AdjustmentsHorizontal.svelte';
+	import DemoInstructionsModal from './DemoInstructionsModal.svelte';
 
 	import PencilSquare from '../icons/PencilSquare.svelte';
 	import Banner from '../common/Banner.svelte';
@@ -43,9 +44,11 @@
 
 	let showShareChatModal = false;
 	let showDownloadChatModal = false;
+	let showDemoInstructions = false;
 </script>
 
 <ShareChatModal bind:show={showShareChatModal} chatId={$chatId} />
+<DemoInstructionsModal bind:show={showDemoInstructions} />
 
 <nav class="sticky top-0 z-30 w-full py-1 -mb-8 flex flex-col items-center drag-region">
 	<div class="flex items-center w-full pl-1.5 pr-1">
@@ -134,6 +137,33 @@
 							</div>
 						</button>
 					</Tooltip> -->
+
+					<Tooltip content={$i18n.t('Instructions')}>
+						<button
+							class="flex cursor-pointer px-2 py-2 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
+							on:click={() => {
+								showDemoInstructions = true;
+							}}
+							aria-label="Instructions"
+						>
+							<div class="m-auto self-center">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke-width="1.5"
+									stroke="currentColor"
+									class="size-5"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+									/>
+								</svg>
+							</div>
+						</button>
+					</Tooltip>
 
 					<Tooltip content={$i18n.t('New Chat')}>
 						<button
