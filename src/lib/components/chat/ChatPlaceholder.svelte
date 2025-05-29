@@ -86,7 +86,7 @@
 					{#if models[selectedModelIdx]?.name}
 						{models[selectedModelIdx]?.name}
 					{:else}
-						{$i18n.t('Hello, {{name}}', { name: $user?.name })}
+						{i18n.t('Hello, {{name}}', { name: $user?.name })}
 					{/if}
 				</div>
 
@@ -96,7 +96,7 @@
 							class="mt-0.5 text-base font-normal text-gray-500 dark:text-gray-400 line-clamp-3 markdown"
 						>
 							{@html marked.parse(
-								sanitizeResponseContent(models[selectedModelIdx]?.info?.meta?.description)
+								sanitizeResponseContent(models[selectedModelIdx]?.info?.meta?.description ?? '')
 							)}
 						</div>
 						{#if models[selectedModelIdx]?.info?.meta?.user}
@@ -117,7 +117,7 @@
 						{/if}
 					{:else}
 						<div class=" font-medium text-gray-400 dark:text-gray-500 line-clamp-1 font-p">
-							{$i18n.t('How can I help you today?')}
+							{i18n.t('How can I help you today?')}
 						</div>
 					{/if}
 				</div>

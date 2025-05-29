@@ -15,6 +15,7 @@
 	import Tooltip from '$lib/components/common/Tooltip.svelte';
 	import EyeSlash from '$lib/components/icons/EyeSlash.svelte';
 	import MessageInput from './MessageInput.svelte';
+	import DemoInstructionsModal from './DemoInstructionsModal.svelte';
 
 	const i18n = getContext('i18n');
 
@@ -43,6 +44,7 @@
 	export let toolServers = [];
 
 	let models = [];
+	let showDemoInstructions = true;
 
 	const selectSuggestionPrompt = async (p) => {
 		let text = p;
@@ -102,6 +104,8 @@
 			</div>
 		</Tooltip>
 	{/if}
+
+	<DemoInstructionsModal bind:show={showDemoInstructions} />
 
 	<div
 		class="w-full text-3xl text-gray-800 dark:text-gray-100 text-center flex items-center gap-4 font-primary"

@@ -26,11 +26,8 @@
 	$: fuse = new Fuse(sortedPrompts, fuseOptions);
 
 	// Update the filteredPrompts if inputValue changes
-	// Only increase version if something wirklich geändert hat
 	$: getFilteredPrompts(inputValue);
 
-	// Helper function to check if arrays are the same
-	// (based on unique IDs oder content)
 	function arraysEqual(a, b) {
 		if (a.length !== b.length) return false;
 		for (let i = 0; i < a.length; i++) {
@@ -50,8 +47,6 @@
 					? fuse.search(inputValue.trim()).map((result) => result.item)
 					: sortedPrompts;
 
-			// Compare with the oldFilteredPrompts
-			// If there's a difference, update array + version
 			if (!arraysEqual(filteredPrompts, newFilteredPrompts)) {
 				filteredPrompts = newFilteredPrompts;
 			}
@@ -67,10 +62,8 @@
 <div class="mb-1 flex gap-1 text-xs font-medium items-center text-gray-600 dark:text-gray-400">
 	{#if filteredPrompts.length > 0}
 		<Bolt />
-		{$i18n.t('Suggested')}
+		{$i18n.t('Suggested DEMO prompt')}
 	{:else}
-		<!-- Keine Vorschläge -->
-
 		<div
 			class="flex w-full {$settings?.landingPageMode === 'chat'
 				? ' -mt-1'
