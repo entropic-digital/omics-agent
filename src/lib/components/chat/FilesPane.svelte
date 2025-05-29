@@ -20,7 +20,7 @@
 	export let files: FileType[] = [];
 </script>
 
-<div class="h-full w-full p-4 bg-white dark:bg-gray-900 overflow-y-auto">
+<div class="h-full w-full p-4 bg-white dark:bg-gray-950 overflow-y-auto">
 	<h2 class="text-lg font-semibold mb-4 dark:text-gray-100">Files</h2>
 
 	{#if files.length > 0}

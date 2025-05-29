@@ -2188,7 +2188,6 @@
 					<Pane defaultSize={50}>
 						<FilesPane bind:files />
 					</Pane>
-
 					<PaneResizer />
 				</PaneGroup>
 			</Pane>
