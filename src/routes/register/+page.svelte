@@ -223,9 +223,7 @@
 					>
 						Welcome to OmicsAgent
 					</h1>
-					<p class="text-lg mb-8 text-gray-700">
-						Your intelligent companion for omics data analysis and interpretation.
-					</p>
+					<p class="text-lg mb-8 text-gray-700">All The Bioinformatics Tools. One Brain.</p>
 					<div class="space-y-8">
 						<div class="flex items-start space-x-4">
 							<div class="flex-shrink-0 mt-1">
@@ -247,8 +245,7 @@
 							<div>
 								<h3 class="font-semibold mb-2 text-gray-900">Automated Analysis</h3>
 								<p class="text-gray-700">
-									Streamline your genomics, transcriptomics, and proteomics workflows with
-									intelligent automation.
+									We handle the algorithms — you focus on the discoveries.
 								</p>
 							</div>
 						</div>
@@ -272,8 +269,8 @@
 							<div>
 								<h3 class="font-semibold mb-2 text-gray-900">Powerful Integration</h3>
 								<p class="text-gray-700">
-									Seamlessly integrate multiple data types and analysis tools in one unified
-									platform.
+									Bring together multi-omics data, workflows, and insights into a single intelligent
+									workspace.
 								</p>
 							</div>
 						</div>
