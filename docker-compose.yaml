@@ -52,6 +52,19 @@ services:
       - host.docker.internal:host-gateway
     restart: unless-stopped
 
+  omics-runner:
+    build:
+      context: ./backend/omics_runner
+      dockerfile: .Dockerfile
+    container_name: omics-runner
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./backend/omics_runner:/app
+    restart: unless-stopped
+    depends_on:
+      - open-webui
+
 volumes:
   ollama: {}
   open-webui: {}
