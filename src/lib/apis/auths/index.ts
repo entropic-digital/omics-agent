@@ -283,6 +283,29 @@ export const userSignIn = async (email: string, password: string) => {
 		throw error;
 	}
 
+	// Clear cache when signing in to prevent showing files from previous users
+	try {
+		if (typeof localStorage !== 'undefined') {
+			// Clear potentially file-related cached data
+			const keysToRemove = [];
+			for (let i = 0; i < localStorage.length; i++) {
+				const key = localStorage.key(i);
+				if (key && (key.indexOf('file') !== -1 || key.indexOf('File') !== -1 || key.indexOf('storage') !== -1)) {
+					keysToRemove.push(key);
+				}
+			}
+			keysToRemove.forEach(key => localStorage.removeItem(key));
+		}
+		
+		if (typeof sessionStorage !== 'undefined') {
+			sessionStorage.clear();
+		}
+		
+		console.log('File cache cleared on sign in');
+	} catch (e) {
+		console.warn('Could not clear file cache on sign in:', e);
+	}
+
 	return res;
 };
 
@@ -321,6 +344,21 @@ export const userSignUp = async (
 		throw error;
 	}
 
+	// Clear cache when signing up to prevent showing files from previous users
+	try {
+		if (typeof localStorage !== 'undefined') {
+			localStorage.clear();
+		}
+		
+		if (typeof sessionStorage !== 'undefined') {
+			sessionStorage.clear();
+		}
+		
+		console.log('Cache cleared on sign up');
+	} catch (e) {
+		console.warn('Could not clear cache on sign up:', e);
+	}
+
 	return res;
 };
 
@@ -347,6 +385,24 @@ export const userSignOut = async () => {
 	if (error) {
 		throw error;
 	}
+
+	// Clear file-related cache to prevent files from other users being shown
+	try {
+		// Clear all localStorage data (this clears everything but is safest)
+		if (typeof localStorage !== 'undefined') {
+			localStorage.clear();
+		}
+		
+		// Clear all sessionStorage data
+		if (typeof sessionStorage !== 'undefined') {
+			sessionStorage.clear();
+		}
+		
+		console.log('Cache cleared on sign out');
+	} catch (e) {
+		console.warn('Could not clear cache on sign out:', e);
+	}
+
 	return res;
 };
 

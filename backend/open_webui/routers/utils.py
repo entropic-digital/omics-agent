@@ -62,6 +62,7 @@ async def execute_code(
                 else None
             ),
             request.app.state.config.CODE_EXECUTION_JUPYTER_TIMEOUT,
+            f"/user-files_host/{user.id}/",
         )
 
         return output

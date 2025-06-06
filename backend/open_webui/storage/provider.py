@@ -299,18 +299,38 @@ class AzureStorageProvider(StorageProvider):
         """Handles uploading of the file to Azure Blob Storage."""
         contents, file_path = LocalStorageProvider.upload_file(file, filename, tags)
         try:
-            blob_client = self.container_client.get_blob_client(filename)
+            # Debug logging
+            log.info(f"Azure upload - Tags received: {tags}")
+            
+            # Get user ID from tags to create user-specific directory
+            user_id = tags.get("OpenWebUI-User-Id", "")
+            log.info(f"Azure upload - Extracted user_id: '{user_id}'")
+            
+            # If user_id exists, prepend it to create user directory structure
+            if user_id:
+                azure_blob_path = f"{user_id}/{filename}"
+                log.info(f"Azure upload - Using user directory path: {azure_blob_path}")
+            else:
+                azure_blob_path = filename
+                log.info(f"Azure upload - Using root path: {azure_blob_path}")
+                
+            blob_client = self.container_client.get_blob_client(azure_blob_path)
             blob_client.upload_blob(contents, overwrite=True)
-            return contents, f"{self.endpoint}/{self.container_name}/{filename}"
+            base_url = f"{self.endpoint}/{self.container_name}"
+            log.info(f"Azure upload - Final URL: {base_url}/{azure_blob_path}")
+            return contents, f"{base_url}/{azure_blob_path}"
         except Exception as e:
             raise RuntimeError(f"Error uploading file to Azure Blob Storage: {e}")
 
     def get_file(self, file_path: str) -> str:
         """Handles downloading of the file from Azure Blob Storage."""
         try:
-            filename = file_path.split("/")[-1]
+            # Extract the blob path from the full URL
+            # file_path format: https://storage.blob.core.windows.net/container/path
+            blob_path = "/".join(file_path.split("/")[4:])  # Skip domain and container
+            filename = blob_path.split("/")[-1]  # Get just the filename
             local_file_path = f"{UPLOAD_DIR}/{filename}"
-            blob_client = self.container_client.get_blob_client(filename)
+            blob_client = self.container_client.get_blob_client(blob_path)
             with open(local_file_path, "wb") as download_file:
                 download_file.write(blob_client.download_blob().readall())
             return local_file_path
@@ -320,8 +340,9 @@ class AzureStorageProvider(StorageProvider):
     def delete_file(self, file_path: str) -> None:
         """Handles deletion of the file from Azure Blob Storage."""
         try:
-            filename = file_path.split("/")[-1]
-            blob_client = self.container_client.get_blob_client(filename)
+            # Extract the blob path from the full URL
+            blob_path = "/".join(file_path.split("/")[4:])  # Skip domain and container
+            blob_client = self.container_client.get_blob_client(blob_path)
             blob_client.delete_blob()
         except ResourceNotFoundError as e:
             raise RuntimeError(f"Error deleting file from Azure Blob Storage: {e}")

@@ -36,6 +36,7 @@ class JupyterCodeExecuter:
         token: str = "",
         password: str = "",
         timeout: int = 60,
+        working_dir: Optional[str] = None,
     ):
         """
         :param base_url: Jupyter server URL (e.g., "http://localhost:8888")
@@ -43,12 +44,14 @@ class JupyterCodeExecuter:
         :param token: Jupyter authentication token (optional)
         :param password: Jupyter password (optional)
         :param timeout: WebSocket timeout in seconds (default: 60s)
+        :param working_dir: Working directory to set before code execution (optional)
         """
         self.base_url = base_url
         self.code = code
         self.token = token
         self.password = password
         self.timeout = timeout
+        self.working_dir = working_dir
         self.kernel_id = ""
         if self.base_url[-1] != "/":
             self.base_url += "/"
@@ -137,6 +140,12 @@ class JupyterCodeExecuter:
     async def execute_in_jupyter(self, ws) -> None:
         # send message
         msg_id = uuid.uuid4().hex
+        
+        # Prepare code with working directory change if specified
+        code_to_run = self.code
+        if self.working_dir:
+            code_to_run = f"import os; os.makedirs('{self.working_dir}', exist_ok=True); os.chdir('{self.working_dir}')\n" + code_to_run
+        
         await ws.send(
             json.dumps(
                 {
@@ -151,7 +160,7 @@ class JupyterCodeExecuter:
                     "parent_header": {},
                     "metadata": {},
                     "content": {
-                        "code": self.code,
+                        "code": code_to_run,
                         "silent": False,
                         "store_history": True,
                         "user_expressions": {},
@@ -174,23 +183,22 @@ class JupyterCodeExecuter:
                     continue
                 # check message type
                 msg_type = message_data.get("msg_type")
-                match msg_type:
-                    case "stream":
-                        if message_data["content"]["name"] == "stdout":
-                            stdout += message_data["content"]["text"]
-                        elif message_data["content"]["name"] == "stderr":
-                            stderr += message_data["content"]["text"]
-                    case "execute_result" | "display_data":
-                        data = message_data["content"]["data"]
-                        if "image/png" in data:
-                            result.append(f"data:image/png;base64,{data['image/png']}")
-                        elif "text/plain" in data:
-                            result.append(data["text/plain"])
-                    case "error":
-                        stderr += "\n".join(message_data["content"]["traceback"])
-                    case "status":
-                        if message_data["content"]["execution_state"] == "idle":
-                            break
+                if msg_type == "stream":
+                    if message_data["content"]["name"] == "stdout":
+                        stdout += message_data["content"]["text"]
+                    elif message_data["content"]["name"] == "stderr":
+                        stderr += message_data["content"]["text"]
+                elif msg_type in ["execute_result", "display_data"]:
+                    data = message_data["content"]["data"]
+                    if "image/png" in data:
+                        result.append(f"data:image/png;base64,{data['image/png']}")
+                    elif "text/plain" in data:
+                        result.append(data["text/plain"])
+                elif msg_type == "error":
+                    stderr += "\n".join(message_data["content"]["traceback"])
+                elif msg_type == "status":
+                    if message_data["content"]["execution_state"] == "idle":
+                        break
 
             except asyncio.TimeoutError:
                 stderr += "\nExecution timed out."
@@ -201,10 +209,10 @@ class JupyterCodeExecuter:
 
 
 async def execute_code_jupyter(
-    base_url: str, code: str, token: str = "", password: str = "", timeout: int = 60
+    base_url: str, code: str, token: str = "", password: str = "", timeout: int = 60, working_dir: Optional[str] = None
 ) -> dict:
     async with JupyterCodeExecuter(
-        base_url, code, token, password, timeout
+        base_url, code, token, password, timeout, working_dir
     ) as executor:
         result = await executor.run()
         return result.model_dump()

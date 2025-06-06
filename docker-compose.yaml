@@ -1,12 +1,5 @@
 services:
-  ollama:
-    volumes:
-      - ollama:/root/.ollama
-    container_name: ollama
-    pull_policy: always
-    tty: true
-    restart: unless-stopped
-    image: ollama/ollama:${OLLAMA_DOCKER_TAG-latest}
+
 
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
@@ -19,52 +12,81 @@ services:
       - '127.0.0.1:4000:4000'
     environment:
       - LITELLM_MASTER_KEY=dummy
-      - ANTHROPIC_API_KEY=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
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
     volumes:
       - ./litellm_config.yaml:/litellm_config.yaml
 
   open-webui:
     build:
       context: .
-      args:
-        OLLAMA_BASE_URL: '/ollama'
       dockerfile: Dockerfile
     image: ghcr.io/open-webui/open-webui:${WEBUI_DOCKER_TAG-main}
     container_name: open-webui
+    env_file:
+      - .env
     volumes:
       - open-webui:/app/backend/data
       - ./backend/logs:/app/backend/logs
       - ./bioinformatics_mcp:/app/bioinformatics_mcp
+      # Mount backend code for development
+      - ./backend:/app/backend
+      # Shared file storage for bioinformatics data
+      - shared-files:/app/shared_files
+      - ./shared_files:/app/shared_files_host
     depends_on:
-      - ollama
       - litellm
     ports:
       - "3000:8080"
     environment:
-      - 'OLLAMA_BASE_URL=http://ollama:11434'
       - 'WEBUI_SECRET_KEY='
       - 'WEBUI_URL=http://localhost:3000'
       - 'ENABLE_OPENAI_API=true'
       - 'OPENAI_API_BASE_URLS=http://litellm:4000/v1'
       - 'OPENAI_API_KEYS=dummy'
       - 'DEFAULT_MODELS=claude-3-5-sonnet'
+      # File sharing configuration
+      - 'SHARED_FILES_PATH=/app/shared_files'
+      - 'HOST_SHARED_FILES_PATH=/app/shared_files_host'
+      - 'MAX_FILE_SIZE_MB=500'
+      - 'ALLOWED_EXTENSIONS=fastq,fq,fa,fasta,sam,bam,vcf,gff,gtf,bed,txt,csv,tsv,json,xml,png,jpg,jpeg,pdf'
+      - 'ENABLE_FILE_SHARING=true'
     extra_hosts:
       - host.docker.internal:host-gateway
     restart: unless-stopped
 
-  omics-runner:
-    build:
-      context: ./backend/omics_runner
-      dockerfile: .Dockerfile
-    container_name: omics-runner
-    ports:
-      - "8888:8888"
-    volumes:
-      - ./backend/omics_runner:/app
-    restart: unless-stopped
-    depends_on:
-      - open-webui
+  # omics-runner:
+  #   build:
+  #     context: ./backend/omics_runner
+  #     dockerfile: .Dockerfile
+  #   container_name: omics-runner
+  #   privileged: true
+  #   cap_add:
+  #     - SYS_ADMIN
+  #   devices:
+  #     - /dev/fuse:/dev/fuse
+  #   ports:
+  #     - "8888:8888"
+  #   volumes:
+  #     - ./backend/omics_runner:/app
+  #     # Shared file storage - same mount as Open WebUI
+  #     - user-files:/user-files
+  #     - ./user-files:/user-files_host
+  #   environment:
+  #     # File sharing configuration
+  #     - 'SHARED_FILES_PATH=/user-files'
+  #     - 'HOST_SHARED_FILES_PATH=/user-files_host'
+  #     - 'MAX_FILE_SIZE_MB=500'
+  #     - 'ALLOWED_EXTENSIONS=fastq,fq,fa,fasta,sam,bam,vcf,gff,gtf,bed,txt,csv,tsv,json,xml,png,jpg,jpeg,pdf'
+  #     # Azure Storage configuration
+  #     - 'AZURE_STORAGE_ENDPOINT=https://entropicstorage.blob.core.windows.net/'
+  #     - 'AZURE_STORAGE_CONTAINER_NAME=user-files'
+  #     - 'AZURE_STORAGE_KEY=${AZURE_STORAGE_KEY}'
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - open-webui
 
 volumes:
   ollama: {}
   open-webui: {}
+  shared-files: {}
+  user-files: {}

@@ -2106,6 +2106,7 @@ async def process_chat_response(
                                             else None
                                         ),
                                         request.app.state.config.CODE_INTERPRETER_JUPYTER_TIMEOUT,
+                                        f"/user-files/{user.id}/",
                                     )
                                 else:
                                     output = {
