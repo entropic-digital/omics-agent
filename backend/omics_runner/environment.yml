@@ -6,3 +6,8 @@ dependencies:
   - python
   - snakemake
   - jupyter
+  - pandas
+  - numpy
+  - matplotlib
+  - seaborn
+  - scipy

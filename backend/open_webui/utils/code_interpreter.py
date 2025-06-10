@@ -52,7 +52,7 @@ class JupyterCodeExecuter:
         self.password = password
         self.timeout = timeout
         self.working_dir = working_dir
-        self.kernel_id = ""
+        self.kernel_id = "omics-runner"
         if self.base_url[-1] != "/":
             self.base_url += "/"
         self.session = aiohttp.ClientSession(trust_env=True, base_url=self.base_url)
@@ -140,12 +140,15 @@ class JupyterCodeExecuter:
     async def execute_in_jupyter(self, ws) -> None:
         # send message
         msg_id = uuid.uuid4().hex
-        
+
         # Prepare code with working directory change if specified
         code_to_run = self.code
         if self.working_dir:
-            code_to_run = f"import os; os.makedirs('{self.working_dir}', exist_ok=True); os.chdir('{self.working_dir}')\n" + code_to_run
-        
+            code_to_run = (
+                f"import os; os.makedirs('{self.working_dir}', exist_ok=True); os.chdir('{self.working_dir}')\n"
+                + code_to_run
+            )
+
         await ws.send(
             json.dumps(
                 {
@@ -209,7 +212,12 @@ class JupyterCodeExecuter:
 
 
 async def execute_code_jupyter(
-    base_url: str, code: str, token: str = "", password: str = "", timeout: int = 60, working_dir: Optional[str] = None
+    base_url: str,
+    code: str,
+    token: str = "",
+    password: str = "",
+    timeout: int = 60,
+    working_dir: Optional[str] = None,
 ) -> dict:
     async with JupyterCodeExecuter(
         base_url, code, token, password, timeout, working_dir
