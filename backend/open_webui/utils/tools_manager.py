@@ -32,7 +32,7 @@ class ToolsManager:
         tool = self.get_tool(tool_name)
         if tool is None:
             raise ValueError(f"Tool {tool_name} not found")
-        
+
         try:
             result = tool(**kwargs)
             return result
@@ -42,4 +42,17 @@ class ToolsManager:
 
 
 # Create a global instance of the tools manager
-tools_manager = ToolsManager() 
+tools_manager = ToolsManager()
+
+
+def load_all_tools():
+    """
+    Load all tools using the new bio_mcp.tools.tool_manager interface.
+    """
+    from bio_mcp.tools.tool_manager import get_registered_tools
+
+    loaded_tools = get_registered_tools()
+    from .tools_manager import tools_manager
+
+    tools_manager._initialize_tools(loaded_tools)
+    return loaded_tools

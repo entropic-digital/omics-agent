@@ -1,7 +1,0 @@
-channels:
-  - conda-forge
-  - bioconda
-  - nodefaults
-dependencies:
-  - samtools =1.21
-  - lofreq =2.1.5

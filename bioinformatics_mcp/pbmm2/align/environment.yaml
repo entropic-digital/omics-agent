@@ -1,6 +1,0 @@
-channels:
-  - conda-forge
-  - bioconda
-  - nodefaults
-dependencies:
-  - pbmm2 =1.17.0

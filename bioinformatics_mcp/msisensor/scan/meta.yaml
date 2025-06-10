@@ -1,8 +1,0 @@
-name: "MSIsensor Scan"
-description: "Scan homopolymers and microsatelites with MSIsensor"
-authors:
-  - Thibault Dayris
-input:
-  - A (multi)fasta formatted file
-output:
-  - A text file containing homopolymers and microsatelites

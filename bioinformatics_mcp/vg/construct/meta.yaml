@@ -1,4 +1,0 @@
-name: "vg construct"
-description: Construct variation graphs from a reference and variant calls.
-authors:
-  - Ali Ghaffaari

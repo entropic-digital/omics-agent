@@ -477,8 +477,11 @@ async def lifespan(app: FastAPI):
     # Load bioinformatics tools
     log.info("Loading all bioinformatics tools...")
     try:
-        from open_webui.utils.tool_loader import load_all_tools
-        loaded_tools = load_all_tools()
+        from bio_mcp.tools.tool_manager import get_registered_tools
+        from open_webui.utils.tools_manager import tools_manager
+
+        loaded_tools = get_registered_tools()
+        tools_manager._initialize_tools(loaded_tools)
         log.info(f"Successfully loaded {len(loaded_tools)} bioinformatics tools")
     except Exception as e:
         log.error(f"Failed to load bioinformatics tools: {e}")
@@ -1061,7 +1064,9 @@ app.include_router(
     evaluations.router, prefix="/api/v1/evaluations", tags=["evaluations"]
 )
 app.include_router(utils.router, prefix="/api/v1/utils", tags=["utils"])
-app.include_router(code_execution.router, prefix="/api/v1/code", tags=["code_execution"])
+app.include_router(
+    code_execution.router, prefix="/api/v1/code", tags=["code_execution"]
+)
 
 
 try:

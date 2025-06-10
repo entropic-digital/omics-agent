@@ -72,7 +72,7 @@ def get_tools(
                 # Handle bioinformatics tools from tools_manager
                 tool_name = tool_id.replace("bioinformatics:", "")
                 from open_webui.utils.tools_manager import tools_manager
-                
+
                 tool_function = tools_manager.get_tool(tool_name)
                 if tool_function:
                     # Get the proper spec from the function signature
@@ -97,10 +97,10 @@ def get_tools(
                             "parameters": {
                                 "type": "object",
                                 "properties": {},
-                                "required": []
-                            }
+                                "required": [],
+                            },
                         }
-                    
+
                     def make_bio_tool_function(func, name):
                         async def bio_tool_function(**kwargs):
                             try:
@@ -108,40 +108,40 @@ def get_tools(
                                     f"Executing bioinformatics tool {name} "
                                     f"with params: {kwargs}"
                                 )
-                                
-                                # Change to the project root directory where 
+
+                                # Change to the project root directory where
                                 # bioinformatics_mcp is located
                                 current_dir = os.getcwd()
                                 project_root = os.path.dirname(
                                     os.path.dirname(
-                                        os.path.dirname(
-                                            os.path.dirname(__file__)
-                                        )
+                                        os.path.dirname(os.path.dirname(__file__))
                                     )
                                 )
                                 os.chdir(project_root)
-                                
+
                                 try:
                                     # Ensure we're calling with keyword arguments
-                                    if hasattr(func, '__call__'):
+                                    if hasattr(func, "__call__"):
                                         if asyncio.iscoroutinefunction(func):
                                             result = await func(**kwargs)
                                         else:
                                             result = func(**kwargs)
                                         log.info(f"Tool {name} executed successfully")
-                                        
+
                                         # Return subprocess result info for AI agent
-                                        if hasattr(result, 'returncode'):
+                                        if hasattr(result, "returncode"):
                                             result_info = {
                                                 "tool": name,
                                                 "returncode": result.returncode,
                                                 "success": result.returncode == 0,
                                                 "stdout": result.stdout,
                                                 "stderr": result.stderr,
-                                                "command_args": getattr(result, 'args', [])
+                                                "command_args": getattr(
+                                                    result, "args", []
+                                                ),
                                             }
                                             return result_info
-                                        
+
                                         return result
                                     else:
                                         return await tools_manager.execute_tool(
@@ -157,18 +157,17 @@ def get_tools(
                                 )
                                 log.error(f"Parameters passed: {kwargs}")
                                 raise
+
                         return bio_tool_function
-                    
-                    callable_func = make_bio_tool_function(
-                        tool_function, tool_name
-                    )
-                    
+
+                    callable_func = make_bio_tool_function(tool_function, tool_name)
+
                     tool_dict = {
                         "tool_id": tool_id,
                         "callable": callable_func,
                         "spec": spec,
                     }
-                    
+
                     tools_dict[tool_name] = tool_dict
                 continue
             elif tool_id.startswith("server:"):
@@ -382,15 +381,15 @@ def convert_function_to_pydantic_model(func: Callable) -> type[BaseModel]:
 
     field_defs = {}
     for name, param in parameters.items():
-
         type_hint = type_hints.get(name, Any)
         default_value = param.default if param.default is not param.empty else ...
 
         param_description = function_param_descriptions.get(name, None)
 
         if param_description:
-            field_defs[name] = type_hint, Field(
-                default_value, description=param_description
+            field_defs[name] = (
+                type_hint,
+                Field(default_value, description=param_description),
             )
         else:
             field_defs[name] = type_hint, default_value

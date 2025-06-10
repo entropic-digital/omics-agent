@@ -1,4 +1,0 @@
-name: umis bamtag
-description: Convert a BAM/SAM with fastqtransformed read names to have UMI and
-authors:
-  - Patrik Smeds
